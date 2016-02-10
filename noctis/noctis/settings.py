@@ -31,6 +31,9 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'nProject.apps.NprojectConfig',
+    'nPath.apps.NpathConfig',
+    'nAsset.apps.NassetConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
