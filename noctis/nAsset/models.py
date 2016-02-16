@@ -34,6 +34,11 @@ class nAsset(models.Model):
 	object_pointer = models.CharField(max_length=300, default="")
 	object_type = models.ForeignKey(nObjectType, on_delete=models.CASCADE)
 
+	## For a good basic relationship between iterations we're going to let
+	## version control be delt with inter-asset-wise
+	version = models.IntField()
+	version_group_id = models.IntField()
+
 	@python_2_unicode_compatible
 	def __str__(self):
 		return self.namephoto
