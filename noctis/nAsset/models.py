@@ -26,6 +26,9 @@ class nAsset(models.Model):
 	2=> The Object Relationship(s) - Where does this tie to other elements
 
 	The last of that being the most ambiguous.
+	
+	Other elements can include things such as pointers to objects that are
+	used to handle this asset. Whatever you see fit of course.
 	"""
 	
 	# For basic simplicity we'll use a filepath but something
@@ -36,8 +39,8 @@ class nAsset(models.Model):
 
 	## For a good basic relationship between iterations we're going to let
 	## version control be delt with inter-asset-wise
-	version = models.IntField()
-	version_group_id = models.IntField()
+	version = models.IntegerField(default=0)
+	version_group_id = models.IntegerField(default=0)
 
 	@python_2_unicode_compatible
 	def __str__(self):
