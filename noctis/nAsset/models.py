@@ -1,6 +1,9 @@
 from django.db import models
 from django.utils.encoding import python_2_unicode_compatible
 
+## Other Apps
+from nPath.models import nPath
+
 class nObjectType(models.Model):
 	"""
 	What are we actually using when it comes to the nAsset
@@ -35,12 +38,22 @@ class nAsset(models.Model):
 	# else can be used to replace this.
 	name = models.CharField(max_length=150, default="")
 	object_pointer = models.CharField(max_length=300, default="")
-	object_type = models.ForeignKey(nObjectType, on_delete=models.CASCADE)
+	object_type = models.ForeignKey(nObjectType, null=True, on_delete=models.SET_NULL)
 
 	## For a good basic relationship between iterations we're going to let
 	## version control be delt with inter-asset-wise
 	version = models.IntegerField(default=0)
 	version_group_id = models.IntegerField(default=0)
+
+	## To keep assets in an even more organized fashion we can add a
+	## parameter to track multiple of the same object_type without
+	## version matching
+	object_name = models.CharField(max_length=300, default="")
+
+	## For digital assets we may want to link a hard file path
+	## with nPath giving the ability to extract/understand information
+	## from it
+	path_setup = models.ForeignKey(nPath, null=True, on_delete=models.SET_NULL)
 
 	@python_2_unicode_compatible
 	def __str__(self):
