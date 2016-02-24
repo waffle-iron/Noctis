@@ -4,7 +4,7 @@ from django.utils.encoding import python_2_unicode_compatible
 class nProject(models.Model):
     """
     The base object for a project. (Obviously)
-    This is more of a concept than a concert, usable item for now.
+    This is more of a concept than a concreet usable item for now.
     With the idea of this repo being open there can be any number
     of way to apply this object.
 
@@ -19,9 +19,13 @@ class nProject(models.Model):
 
     @param::name: The name of the project
     @type::name: CharField
+
+    @param::short: The short name of the project. Cleanliness
+    @type::short: CharField
     """
 
     name = models.CharField(max_length=200)
+    short = models.CharField(max_length=10, default="")
 
     @python_2_unicode_compatible
     def __str__(self):
