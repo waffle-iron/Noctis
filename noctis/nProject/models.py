@@ -1,6 +1,8 @@
 from django.db import models
 from django.utils.encoding import python_2_unicode_compatible
 
+## Other Apps
+from nTracking.models import nStatusComponent
 
 class nProjectType(models.Model):
     """
@@ -13,7 +15,7 @@ class nProjectType(models.Model):
     @type::name: CharField
     """
 
-    name = models.CharField(max_length=200)
+    name = models.CharField(max_length=150)
 
     @python_2_unicode_compatible
     def __str__(self):
@@ -28,7 +30,7 @@ class nProjectPartType(models.Model):
     @type::name: CharField
     """
 
-    name = models.CharField(max_length=200)
+    name = models.CharField(max_length=150)
 
     @python_2_unicode_compatible
     def __str__(self):
@@ -52,7 +54,7 @@ class nProject(models.Model):
     @type::short: CharField
     """
 
-    name = models.CharField(max_length=200)
+    name = models.CharField(max_length=150)
     short = models.CharField(max_length=10, default="")
 
     project_type = models.ForeignKey(nProjectType, null=True, on_delete=models.CASCADE)
@@ -67,12 +69,15 @@ class nProjectHub(models.Model):
     project part together. Designed as a potentailly transparent
     or optional argument, the Hub can be the shot while the ProjectPart
     can be the sub-process assigned to it.
+
+    @param::part_type: The type of part this is (ehh..)
+    @type::part_type: nProjectPartType
     """
 
     ## Because these may link together we can pool the same ProjectPartTypes
     part_type = models.ForeignKey(nProjectPartType, null=True, on_delete=models.CASCADE)
 
-    name = models.CharField(max_length=300)
+    name = models.CharField(max_length=150)
 
     @python_2_unicode_compatible
     def __str__(self):
@@ -96,7 +101,12 @@ class nProjectPart(models.Model):
     ## What kind of project part are we working on?
     part_type = models.ForeignKey(nProjectPartType, null=True, on_delete=models.CASCADE)
 
-    name = models.CharField(max_length=300)
+    name = models.CharField(max_length=150)
+
+    ## When it comes down to it we'll need each component to have
+    ## tracking markers. How we decide to handle that can vary on
+    ## the project/pipeline. Hence why tracking is it's own app.
+    track_status = models.ForeignKey(nStatusComponent, null=True, on_delete=models.CASCADE)
 
     @python_2_unicode_compatible
     def __str__(self):

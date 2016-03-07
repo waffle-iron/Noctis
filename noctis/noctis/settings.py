@@ -31,6 +31,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'nTracking.apps.NtrackingConfig',
     'nProject.apps.NprojectConfig',
     'nPath.apps.NpathConfig',
     'nAsset.apps.NassetConfig',
@@ -82,10 +83,10 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         #'ENGINE': 'django.db.backends.sqlite3',
         'NAME': 'atlantis',
-	'USER': 'atlantis',
-	'PASSWORD': 'abc123',
-	'HOST' : '192.168.0.24',
-	'PORT' : '5432'
+        'USER': 'atlantis',
+        'PASSWORD': 'abc123',
+        'HOST' : '192.168.0.24',
+        'PORT' : '5432'
     }
 }
 
