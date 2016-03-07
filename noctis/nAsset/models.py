@@ -5,7 +5,7 @@ from django.utils.encoding import python_2_unicode_compatible
 from nPath.models import nPath
 from nProject.models import nProjectPart
 
-class nObjectType(models.Model):
+class nAssetType(models.Model):
     """
     What are we actually using when it comes to the nAsset
     """
@@ -15,6 +15,34 @@ class nObjectType(models.Model):
     @python_2_unicode_compatible
     def __str__(self):
         return self.name
+
+class nVersionControler(models.Model):
+    """
+    In order to most effectively coalate objects into the same
+    space we need a method of organizing them and placing them into
+    sequential buckets. This alows us to do just that.
+
+    @param::highest_version: The current highest version available
+    for that group of assets.
+    @type::highest_version: Int
+    """
+
+    highest_version = models.IntegerField(default=0)
+
+    ## To keep assets in an even more organized fashion we can add a
+    ## parameter to track multiple of the same object_type without
+    ## version matching
+    group_name = models.CharField(max_length=300, default="")
+
+    @python_2_unicode_compatible
+    def __str__(self):
+        return self.group_name
+
+    def versionUp(self, number=1, static=False):
+        if static:
+            self.highest_version = number
+        else:
+            self.highest_version += number
 
 class nAsset(models.Model):
     """
@@ -37,19 +65,13 @@ class nAsset(models.Model):
     
     # For basic simplicity we'll use a filepath but something
     # else can be used to replace this.
-    name = models.CharField(max_length=150, default="")
     asset_pointer = models.CharField(max_length=300, default="")
-    asset_type = models.ForeignKey(nObjectType, null=True, on_delete=models.SET_NULL)
+    asset_type = models.ForeignKey(nAssetType, null=True, on_delete=models.SET_NULL)
 
     ## For a good basic relationship between iterations we're going to let
     ## version control be delt with inter-asset-wise
     version = models.IntegerField(default=0)
-    version_group_id = models.IntegerField(default=0)
-
-    ## To keep assets in an even more organized fashion we can add a
-    ## parameter to track multiple of the same object_type without
-    ## version matching
-    asset_name = models.CharField(max_length=300, default="")
+    version_controller = models.ForeignKey(nVersionControler, null=True, on_delete=models.SET_NULL)
 
     ## For digital assets we may want to link a hard file path
     ## with nPath giving the ability to extract/understand information
