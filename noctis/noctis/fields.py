@@ -8,7 +8,7 @@ import json
 from django.db import models
 from django.core.serializers.json import DjangoJSONEncoder
 
-class JSONField(models.TextFeild):
+class JSONField(models.TextField):
     """
     Extracted from the web this is a simple method of extracting
     valid json data from the database.
