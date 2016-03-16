@@ -1,11 +1,27 @@
 from django.db import models
 from django.utils.encoding import python_2_unicode_compatible
+from django.core.exceptions import ValidationError
 
 ## Extra Fields:
 from noctis.fields import ListField
 
-## python
+## Defaults:
+from nTracking.defaults.tracking_defaults import default_status_breakdown_config
+
+## python:
 from datetime import datetime
+
+def statusBreakdownTest(config):
+    if isinstance(config, list):
+        for aStatus in config:
+            status_match = nStatusComponentLevel.objects.get(name=aStatus)
+            print ("ERROR: %s not found in database. Add it as a \
+            Component Level or remove it form the list."%aStatus)
+            if not status_match:
+                raise ValidationError
+        return True
+    print ("ERROR: config is not a list type.")
+    raise ValidationError
 
 class nStatusType(models.Model):
     """
@@ -18,10 +34,11 @@ class nStatusType(models.Model):
     @param::status_breakdown: The actual breakdown that a status
     goes through as it passes markers.
     @type::status_breakdown: ListField
+    @i.e.: ["name_of_status1", "name_of_status2", ...]
     """
     name = models.CharField(max_length=150)
-    total_status_components = models.IntegerField(default=0)
-    status_breakdown = ListField(null=True)
+    status_breakdown = ListField(default=default_status_breakdown_config,
+                                 validators=[statusBreakdownTest])
 
     @python_2_unicode_compatible
     def __str__(self):
@@ -32,7 +49,7 @@ class nStatusComponentLevel(models.Model):
     The component status should have to have markers
     as it walks through the pipeline(s). This is that marker.
     """
-    name = models.CharField(max_length=150)
+    name = models.CharField(max_length=150, unique=True)
     value = models.IntegerField(default=0)
 
     @python_2_unicode_compatible

@@ -84,3 +84,7 @@ class nAsset(models.Model):
     @python_2_unicode_compatible
     def __str__(self):
         return self.name
+
+    @python_2_unicode_compatible
+    def getGroupName(self):
+        return version_controller.group_name
