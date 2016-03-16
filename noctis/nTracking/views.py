@@ -4,7 +4,7 @@ from jsonrpc import jsonrpc_method
 ## Models:
 from .models import nStatusComponentLevel
 
-@jsonrpc_method('nTracking.get_all_status_component_levels')
+@jsonrpc_method('nTracking.get_all_status_component_levels() -> list')
 def get_all_status_component_levels(request):
     """
     Simple RPC to call all CL names in the database.

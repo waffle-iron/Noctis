@@ -18,10 +18,7 @@ Vagrant.configure(2) do |config|
     vb.cpus = 2
   end
 
-  # Copies your local gitconfig to the VM so you don't have to set it up again
-  # config.vm.provision "file", source: "~/.gitconfig", destination: ".gitconfig"
-
   # Installs all packages and tools 
-  config.vm.provision :shell, path: "setup.sh"
+  config.vm.provision :shell, path: "psql_setup.sh"
 
 end
