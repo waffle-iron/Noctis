@@ -41,8 +41,15 @@ virtualenv /opt/poolgresenv
 # Django
 pip3 install django
 
+# git repos
 mkdir ~/Documents/git
 cd ~/Documents/git
+# jsonrpc
+git clone git://github.com/samuraisam/django-json-rpc.git
+cd django-json-rpc
+python3 setup.py install
+# noctis itself
+cd ~Documents/git
 git clone https://github.com/PrettyTrue/noctis.git
 
 ## And Finally finish up!

@@ -34,6 +34,13 @@ class nVersionControler(models.Model):
     ## version matching
     group_name = models.CharField(max_length=300, default="")
 
+    ## This is the pointer that lets us keep unique identification
+    ## down to a certain level.
+    part_pointer = models.ForeignKey(nProjectPart, on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = ('part_pointer', 'group_name')
+
     @python_2_unicode_compatible
     def __str__(self):
         return self.group_name
@@ -63,13 +70,13 @@ class nAsset(models.Model):
     used to handle this asset. Whatever you see fit of course.
     """
     
-    # For basic simplicity we'll use a filepath but something
-    # else can be used to replace this.
+    ## This mainly points to a path. While it has the ability to act as more than
+    ## that it will take a little massaging in other models/views.
     asset_pointer = models.CharField(max_length=300, default="")
     asset_type = models.ForeignKey(nAssetType, null=True, on_delete=models.SET_NULL)
 
     ## For a good basic relationship between iterations we're going to let
-    ## version control be delt with inter-asset-wise
+    ## version control be dealt with inter-asset-wise
     version = models.IntegerField(default=0)
     version_controller = models.ForeignKey(nVersionControler, null=True, on_delete=models.SET_NULL)
 
@@ -81,6 +88,18 @@ class nAsset(models.Model):
     ## Organization ##
     project_part = models.ForeignKey(nProjectPart, null=True, on_delete=models.CASCADE)
 
+    ## Another piece of assets comes in the perspective of scope.
+    ## When we're looking at something like assets it can be hard
+    ## to obtain singular information from certain distances
+    ## In order to fix this we can rely on the approval system in
+    ## the nTracking model.
+    ## These are estabilished in a 'pointer' fashion to avoid overloading
+    ## this table as much as possible. Lean and mean is the goal.
+
+    ## Information handles.
+    author = models.CharField(max_length=64, default="")
+
+    ### Methods ###
     @python_2_unicode_compatible
     def __str__(self):
         return self.name
