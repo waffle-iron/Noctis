@@ -19,12 +19,10 @@ class nPath(models.Model):
     @type::project: ForeignKey(nProject)
     """
 
-    name = models.CharField(max_length=200)
-    path_setup = models.TextField()
-    project = models.ForeignKey(nProject, on_delete=models.CASCADE)
+    name = models.CharField(max_length=200, unique=True)
+    path_setup = models.TextField(default="")
 
     @python_2_unicode_compatible
     def __str__(self):
         return self.name
 
-    ## Manipulating path_setup ##

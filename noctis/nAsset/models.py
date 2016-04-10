@@ -36,7 +36,7 @@ class nVersionControler(models.Model):
 
     ## This is the pointer that lets us keep unique identification
     ## down to a certain level.
-    part_pointer = models.ForeignKey(nProjectPart, on_delete=models.CASCADE)
+    hub_pointer = models.ForeignKey(nProjectHub, on_delete=models.CASCADE)
 
     class Meta:
         unique_together = ('part_pointer', 'group_name')
