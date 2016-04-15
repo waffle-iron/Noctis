@@ -4,6 +4,7 @@ from django.utils.encoding import python_2_unicode_compatible
 ## Other Apps
 from nPath.models import nPath
 from nProject.models import nProjectPart
+from nProject.models import nProjectHub
 
 class nAssetType(models.Model):
     """
@@ -16,7 +17,7 @@ class nAssetType(models.Model):
     def __str__(self):
         return self.name
 
-class nVersionControler(models.Model):
+class nVersionController(models.Model):
     """
     In order to most effectively coalate objects into the same
     space we need a method of organizing them and placing them into
@@ -24,22 +25,26 @@ class nVersionControler(models.Model):
 
     @param::highest_version: The current highest version available
     for that group of assets.
-    @type::highest_version: Int
+    @type::highest_version: Int 
     """
 
-    highest_version = models.IntegerField(default=0)
+    highest_version = models.IntegerField(default=1)
 
     ## To keep assets in an even more organized fashion we can add a
     ## parameter to track multiple of the same object_type without
     ## version matching
-    group_name = models.CharField(max_length=300, default="")
+    group_name = models.CharField(max_length=64, default="")
 
     ## This is the pointer that lets us keep unique identification
     ## down to a certain level.
-    hub_pointer = models.ForeignKey(nProjectHub, on_delete=models.CASCADE)
+    hub_pointer = models.ForeignKey(nProjectHub, null=True, on_delete=models.CASCADE)
+
+    ## Here's where we'll house the type of our assets. This is because
+    ## a group should conatin only one type of asset!
+    asset_type = models.ForeignKey(nAssetType, null=True, on_delete=models.CASCADE)
 
     class Meta:
-        unique_together = ('part_pointer', 'group_name')
+        unique_together = ('hub_pointer', 'group_name', 'asset_type')
 
     @python_2_unicode_compatible
     def __str__(self):
@@ -73,20 +78,19 @@ class nAsset(models.Model):
     ## This mainly points to a path. While it has the ability to act as more than
     ## that it will take a little massaging in other models/views.
     asset_pointer = models.CharField(max_length=300, default="")
-    asset_type = models.ForeignKey(nAssetType, null=True, on_delete=models.SET_NULL)
 
     ## For a good basic relationship between iterations we're going to let
-    ## version control be dealt with inter-asset-wise
+    ## version control/asset 'typing' be dealt with inter-asset-wise
     version = models.IntegerField(default=0)
-    version_controller = models.ForeignKey(nVersionControler, null=True, on_delete=models.SET_NULL)
+    version_controller = models.ForeignKey(nVersionController, null=True, on_delete=models.SET_NULL)
 
     ## For digital assets we may want to link a hard file path
     ## with nPath giving the ability to extract/understand information
     ## from it
-    path_setup = models.ForeignKey(nPath, null=True, on_delete=models.SET_NULL)
+    # path_setup = models.ForeignKey(nPath, null=True, on_delete=models.SET_NULL)
 
     ## Organization ##
-    project_part = models.ForeignKey(nProjectPart, null=True, on_delete=models.CASCADE)
+    project_hub = models.ForeignKey(nProjectHub, null=True, on_delete=models.CASCADE)
 
     ## Another piece of assets comes in the perspective of scope.
     ## When we're looking at something like assets it can be hard

@@ -15,8 +15,8 @@ To connect the most intense elements of a production pipeline together and help 
 #### Tracking and the Ticket System
 This is in part handled by the Noctis engine (Django) as well as a slight I/O component. We need to keep all of our data in oder. Unlike most environments however we want the ability to keep our assets moving to any place in particular without giving up even a hint of security.
 
-#### to be continued...
-
+#### Asset Handling
+When we deal with an open source concept like Noctis we have to be prepared for many possible requirements of the parts and pieces that make up the heart of our data.
 
 ### Development Setup
 See the wiki for more detailed instructions however the prerequisites are:
