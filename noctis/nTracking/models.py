@@ -2,6 +2,8 @@ from django.db import models
 from django.utils.encoding import python_2_unicode_compatible
 from django.core.exceptions import ValidationError
 
+## Other Models:
+
 ## Extra Fields:
 from noctis.fields import ListField
 
@@ -10,6 +12,10 @@ from nTracking.defaults.tracking_defaults import default_status_breakdown_config
 
 ## python:
 from datetime import datetime
+
+'''
+Status Work. Areas dealing with overall progress of nProjectParts/Hubs
+'''
 
 def statusBreakdownTest(config):
     if isinstance(config, list):
@@ -34,9 +40,9 @@ class nStatusType(models.Model):
     @param::status_breakdown: The actual breakdown that a status
     goes through as it passes markers.
     @type::status_breakdown: ListField
-    @i.e.: ["name_of_status1", "name_of_status2", ...]
+    @i.e.: ["name_of_SCL1", "name_of_SCL2", ...]
     """
-    name = models.CharField(max_length=150)
+    name = models.CharField(max_length=150, unique=True)
     status_breakdown = ListField(default=default_status_breakdown_config,
                                  validators=[statusBreakdownTest])
 
@@ -59,21 +65,16 @@ class nStatusComponentLevel(models.Model):
 class nStatusComponentHistory(models.Model):
     """
     Storing history information can be vital in term of keeping
-    long stream data organized. Making it acessable can be just
+    long stream data organized. Making it accessible can be just
     as vital.
     """
-
     status_id = models.IntegerField(default=0)
     modified_on = models.DateTimeField(default=datetime.now, auto_now=False)
     status_level = models.ForeignKey(nStatusComponentLevel, on_delete=models.CASCADE)
 
     @python_2_unicode_compatible
     def __str__(self):
-        return "WIP"
-        
-        ## TODO: sort this better and make it useful... Bad for now.
-        _all_inline = nStatusComponentHistory.objects.filter(status_id=self.status_id)
-        return str([a.status_level.name for a in _all_inline])
+        return self.status_level.name
 
 
 class nStatusComponent(models.Model):
@@ -94,10 +95,83 @@ class nStatusComponent(models.Model):
     ## For fast return of the status level
     @python_2_unicode_compatible
     def __str__(self):
-        return status_level.name
+        return self.status_level.name
 
     def percentComplete(self):
-        return (float(status_level.value)/float(status_type.total_status_components))*100.0
+        return (float(self.status_level.value)/float(self.status_type.total_status_components))*100.0
 
     def getHistory(self):
         raise NotImplementedError # TODO
+
+
+'''
+Approvals. Working with a pointer setup. Testing this will be important
+to keep everything in sync but will free up table-space and give central point
+of access to managed tracking data.
+
+Another import note is benefits to removing approval from direct contact with
+other models. An approval can simultaneously point to multiple parts and link
+elements that have no real connection. Keeping this on a clean, sustainable
+level of abstraction will help 
+'''
+
+class nApprovalLevel(models.Model):
+    """
+    Where the real tracking starts. The most basic level
+    of approval markers. These will need to be preprocessed.
+    """
+    name = models.CharField(max_length=64, unique=True)
+
+### ABSTRACT ###
+class nAbstractApproval(models.Model):
+    """
+    Approvals can range from both single perspective to
+    a broad angled one covering multiple pieces.
+    """
+    approval_level = models.ForeignKey(nApprovalLevel, on_delete=models.CASCADE)
+    achieved_on = models.DateTimeField(default=datetime.now, auto_now=False)
+
+    ## In noctis we use the concept of organic(0) - stale(1) - ripe(2) data.
+    ## meaning there is room to conditionally organize and manage
+    ## large sets of objects based on whether or not we can trust
+    ## the information.
+    age = models.IntegerField(default=0)
+
+    @python_2_unicode_compatible
+    def __str__(self):
+        return self.name
+
+class nMainApproval(nAbstractApproval):
+    """
+    The approval can take many forms but we'll try
+    to keep it abstract as possible while getting the idea
+    across to the user/developer.
+    """
+    from nAsset.models import nAsset
+    from nProject.models import nProject, nProjectHub, nProjectPart
+
+    ## All can be null to allow for dynamic 'linking' of objects.
+    project_pointer = models.ForeignKey(nProject, null=True, on_delete=models.CASCADE)
+    hub_pointer = models.ForeignKey(nProjectHub, null=True, on_delete=models.CASCADE)
+    part_pointer = models.ForeignKey(nProjectPart, null=True, on_delete=models.CASCADE)
+    asset_pointer = models.ForeignKey(nAsset, on_delete=models.CASCADE)
+
+    def __repr__(self):
+        return "<Asset Approval, %d > %s>"%(self.id, self.asset.id)
+
+    @classmethod
+    def dict_fields(cls):
+        fields = [f.name for f in cls._meta.fields]
+        fields.extend("project_pointer__name",
+                      "hub_pointer__name",
+                      "part_pointer__name",
+                      "asset_pointer__asset_type",
+                      "asset_pointer__version",
+                      "asset_pointer__version_controller__group_name")
+        return fields
+
+    @classmethod
+    def to_dict(cls, query_on):
+        fields = cls.dict_fields()
+        values = list(query_on.values(*fields))
+        return values

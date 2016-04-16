@@ -76,8 +76,8 @@ class nProjectHub(models.Model):
 
     ## Because these may link together we can pool the same ProjectPartTypes
     part_type = models.ForeignKey(nProjectPartType, null=True, on_delete=models.CASCADE)
-
     name = models.CharField(max_length=150)
+    project = models.ForeignKey(nProject, null=True, on_delete=models.CASCADE)
 
     @python_2_unicode_compatible
     def __str__(self):
@@ -107,6 +107,8 @@ class nProjectPart(models.Model):
     ## tracking markers. How we decide to handle that can vary on
     ## the project/pipeline. Hence why tracking is it's own app.
     track_status = models.ForeignKey(nStatusComponent, null=True, on_delete=models.CASCADE)
+
+    project = models.ForeignKey(nProject, null=True, on_delete=models.CASCADE)
 
     @python_2_unicode_compatible
     def __str__(self):
