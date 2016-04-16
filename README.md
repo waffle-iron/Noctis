@@ -16,10 +16,16 @@ To connect the most intense elements of a production pipeline together and help 
 This is in part handled by the Noctis engine (Django) as well as a slight I/O component. We need to keep all of our data in oder. Unlike most environments however we want the ability to keep our assets moving to any place in particular without giving up even a hint of security.
 
 #### Asset Handling
-When we deal with an open source concept like Noctis we have to be prepared for many possible requirements of the parts and pieces that make up the heart of our data.
+When we deal with an open source concept like Noctis we have to be prepared for many possible requirements of the parts and pieces that make up the heart of our data. Keeping assets managed both simple and reachable we can obtain quite a bit of information without bogging down the system.
+
+#### Application Distribution
+In an effort to exonerate the 'open source movement' Noctis will always try to handle projects using software available to everyone. Using proprietary software only where truly needed/supplied by another source. Internal networks using their own packages to work alongside this environment are welcome to use whatever they would like of course.
+
+#### Package Control
+Noctis will eventually have other support packages to run alongside the applications interacting with it. This includes resource management, tracking/status updating, etc.
 
 ### Development Setup
-See the wiki for more detailed instructions however the prerequisites are:
+See the wiki for more detailed instructions (Coming soon...) however the prerequisites are:
 ```
 Vagrant
 Virtual Box

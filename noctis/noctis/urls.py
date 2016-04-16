@@ -16,10 +16,12 @@ Including another URLconf
 from django.conf.urls import include, url
 from django.contrib import admin
 
-## Extra:
+## Rpc:
 import jsonrpc.views
 from jsonrpc import jsonrpc_site
+# views to rpc:
 import nTracking.views
+import nAsset.views
 
 urlpatterns = [
     url(r'^json/browse/', jsonrpc.views.browse, name="jsonrpc_browser"),

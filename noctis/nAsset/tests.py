@@ -36,7 +36,6 @@ class AssetTestCase(TestCase):
         ace = nAsset.objects.create(asset_pointer=self.test_file%("file1"),
                                     version=1,
                                     version_controller=vc,
-                                    project_hub=pHub,
                                     author="prettytrue")
 
         self.assertEqual(ace.version, 1)
@@ -53,4 +52,4 @@ class AssetTestCase(TestCase):
                            hub_name="tb0001",
                            project_name=prj.name)
 
-        self.assertEqual(res, {})
+        self.assertEqual(res['version'], 1)

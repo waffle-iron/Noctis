@@ -19,9 +19,9 @@ class nAssetType(models.Model):
 
 class nVersionController(models.Model):
     """
-    In order to most effectively coalate objects into the same
+    In order to most effectively collate objects into the same
     space we need a method of organizing them and placing them into
-    sequential buckets. This alows us to do just that.
+    sequential buckets. This allows us to do just that.
 
     @param::highest_version: The current highest version available
     for that group of assets.
@@ -40,7 +40,7 @@ class nVersionController(models.Model):
     hub_pointer = models.ForeignKey(nProjectHub, null=True, on_delete=models.CASCADE)
 
     ## Here's where we'll house the type of our assets. This is because
-    ## a group should conatin only one type of asset!
+    ## a group should contain only one type of asset!
     asset_type = models.ForeignKey(nAssetType, null=True, on_delete=models.CASCADE)
 
     class Meta:
@@ -58,7 +58,7 @@ class nVersionController(models.Model):
 
 class nAsset(models.Model):
     """
-    The main object for any form of singular object component management
+    The main model for any form of singular object component management
     in the pipeline. (i.e. a Render, 3D Model, Project File, Scripts, etc.)
 
     This bad boy has the potential to be both amazing and dangerous.
@@ -89,15 +89,15 @@ class nAsset(models.Model):
     ## from it
     # path_setup = models.ForeignKey(nPath, null=True, on_delete=models.SET_NULL)
 
-    ## Organization ##
-    project_hub = models.ForeignKey(nProjectHub, null=True, on_delete=models.CASCADE)
+    ## Organization ## -> Pushed to the Version Controller
+    # project_hub = models.ForeignKey(nProjectHub, null=True, on_delete=models.CASCADE)
 
     ## Another piece of assets comes in the perspective of scope.
     ## When we're looking at something like assets it can be hard
     ## to obtain singular information from certain distances
     ## In order to fix this we can rely on the approval system in
     ## the nTracking model.
-    ## These are estabilished in a 'pointer' fashion to avoid overloading
+    ## These are established in a 'pointer' fashion to avoid overloading
     ## this table as much as possible. Lean and mean is the goal.
 
     ## Information handles.
@@ -111,3 +111,28 @@ class nAsset(models.Model):
     @python_2_unicode_compatible
     def getGroupName(self):
         return version_controller.group_name
+
+    @classmethod
+    def make_dicts(cls, q):
+        ## To make a dictionary out of the objects at maximum performance
+        ## let's lean on the database rather than Python.
+        asset_fields = [field.name for field in cls._meta.fields]
+        version_controller_list =  [ "version_controller__group_name",
+                                     "version_controller__asset_type__name",
+                                     "version_controller__hub_pointer" ]
+        asset_fields.extend(version_controller_list)
+        asset_values = list(q.values(*asset_fields))
+
+        ## Organize our tables.
+        for an_asset in asset_values:
+            vn = 'version_controller'
+            version_controller_table = {}
+            vc_id = an_asset[vn]
+            an_asset[vn] = dict(id=vc_id)
+            for a_vc_value in version_controller_list:
+                an_asset[vn][a_vc_value[len(vn)+2:]] = an_asset.pop(a_vc_value)
+
+        import pprint
+        pp = pprint.PrettyPrinter(indent=4)
+        pp.pprint(asset_values)
+        return asset_values

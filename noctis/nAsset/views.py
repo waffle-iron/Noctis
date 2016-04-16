@@ -1,6 +1,9 @@
 from django.shortcuts import render
 from jsonrpc import jsonrpc_method
 
+## User Authentication.
+from django.contrib.auth.decorators import permission_required
+
 ## Other models:
 from nPath.models import nPath
 from nPath.views import extract_basic
@@ -15,17 +18,13 @@ from .models import nVersionController
 ## Other/Misc:
 from noctis import utils
 
-@jsonrpc_method("nAsset.create_asset(str, str, int, str, str, str, int) -> dict")
+@jsonrpc_method("nAsset.create_asset(str, str, int, str, str, str) -> dict")
 def create_asset(request, asset_pointer="", asset_type="", version=0,
-                 asset_name="", hub_name="", project_name=""):
+                 asset_name="", hub_name="", project_name=""):  
     """
     Create an nAsset. This takes quite a few params but needs to be potent and
     well connected. This has to point quite a few directions without being dependent
     on too much.
-
-    path_setup example :
-        setup_name -'Noctis_Maya_Project'
-        setup_style - /@share@/@server@/projects/@project@/...
 
     @params
     $asset_pointer : (str) : give us the path we;re working with.
@@ -67,7 +66,6 @@ def create_asset(request, asset_pointer="", asset_type="", version=0,
     asset = nAsset.objects.create(asset_pointer=asset_pointer,
                                   version=version,
                                   version_controller=version_control,
-                                  project_hub=hub,
                                   author=_u)
 
-    return {}
+    return nAsset.make_dicts(nAsset.objects.filter(id=asset.id))[0]
