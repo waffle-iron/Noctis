@@ -6,6 +6,9 @@ from nPath.models import nPath
 from nProject.models import nProjectPart
 from nProject.models import nProjectHub
 
+## Utilitis
+from noctis.utils import organize_values
+
 class nAssetType(models.Model):
     """
     What are we actually using when it comes to the nAsset
@@ -124,13 +127,16 @@ class nAsset(models.Model):
         asset_values = list(q.values(*asset_fields))
 
         ## Organize our tables.
+        vn = 'version_controller'
+        # asset_results = []
         for an_asset in asset_values:
-            vn = 'version_controller'
+            # asset_results.append(organize_values([vn], an_asset))
             version_controller_table = {}
             vc_id = an_asset[vn]
             an_asset[vn] = dict(id=vc_id)
             for a_vc_value in version_controller_list:
                 an_asset[vn][a_vc_value[len(vn)+2:]] = an_asset.pop(a_vc_value)
+            an_asset[vn]['asset_type'] = { 'name' : an_asset[vn].pop('asset_type__name') }
 
         import pprint
         pp = pprint.PrettyPrinter(indent=4)
