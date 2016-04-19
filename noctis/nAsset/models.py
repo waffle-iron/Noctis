@@ -9,9 +9,15 @@ from nProject.models import nProjectHub
 ## Utilitis
 from noctis.utils import organize_values
 
+## History Tracking
+from simple_history.models import HistoricalRecords
+
 class nAssetType(models.Model):
     """
     What are we actually using when it comes to the nAsset
+
+    :param::name: Name of the asset type.
+    :type::name: CharField
     """
     
     name = models.CharField(max_length=150, default="")
@@ -26,9 +32,19 @@ class nVersionController(models.Model):
     space we need a method of organizing them and placing them into
     sequential buckets. This allows us to do just that.
 
-    @param::highest_version: The current highest version available
+    :param::highest_version: The current highest version available
     for that group of assets.
-    @type::highest_version: Int 
+    :type::highest_version: IntegerField
+
+    :param::group_name: The version group name our assets use to for human readable
+    understanding and collecting
+    :type::group_name: CharField
+
+    :param::hub_pointer: The hub this group is attached to.
+    :type::hub_pointer: ForeignKey -> nProjectHub
+
+    :param::asset_type: The type of asset we're dealing with.
+    :type::asset_type: ForeignKey -> nAssetType
     """
 
     highest_version = models.IntegerField(default=1)
@@ -105,6 +121,12 @@ class nAsset(models.Model):
 
     ## Information handles.
     author = models.CharField(max_length=64, default="")
+
+    ## Date Time Information to reference creation timing.
+    created = models.DateTimeField(default=datetime.now, auto_now=False)
+
+    ## History Tracking -> For if we make changes to the object
+    history = HistoricalRecords()
 
     ### Methods ###
     @python_2_unicode_compatible

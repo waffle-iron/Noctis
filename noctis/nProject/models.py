@@ -2,7 +2,10 @@ from django.db import models
 from django.utils.encoding import python_2_unicode_compatible
 
 ## Other Apps
-from nTracking.models import nStatusComponent
+# from nTracking.models import nStatusComponent
+
+## History Tracking
+from simple_history.models import HistoricalRecords
 
 class nProjectType(models.Model):
     """
@@ -11,8 +14,8 @@ class nProjectType(models.Model):
     it falls under to help organize elements/give permissions
     more easily.
 
-    @param::name: The name of the project type
-    @type::name: CharField
+    :param::name: The name of the project type
+    :type::name: CharField
     """
 
     name = models.CharField(max_length=150)
@@ -26,8 +29,8 @@ class nProjectPartType(models.Model):
     Even the parts have a type no? Managing this should be simple
     enough.
 
-    @param::name: The name of the project part type
-    @type::name: CharField
+    :param::name: The name of the project part type
+    :type::name: CharField
     """
 
     name = models.CharField(max_length=150)
@@ -39,7 +42,7 @@ class nProjectPartType(models.Model):
 class nProject(models.Model):
     """
     The base object for a project. (Obviously)
-    This is more of a concept than a concreet usable item for now.
+    This is more of a concept than a concrete usable item for now.
     With the idea of this repo being open there can be any number
     of way to apply this object.
 
@@ -47,17 +50,22 @@ class nProject(models.Model):
     refine the use and specificity. Nothing should become too strict.
     Modularity is always key.
 
-    @param::name: The name of the project
-    @type::name: CharField
+    :param::name: The name of the project
+    :type::name: CharField
 
-    @param::short: The short name of the project. Cleanliness
-    @type::short: CharField
+    :param::short: The short name of the project. Cleanliness
+    :type::short: CharField
+
+    :param::project_type: What type of project are we working with
+    :type::project_type: ForeignKey -> nProjectType
     """
 
     name = models.CharField(max_length=150)
     short = models.CharField(max_length=10, default="")
 
     project_type = models.ForeignKey(nProjectType, null=True, on_delete=models.CASCADE)
+
+    history = HistoricalRecords()
 
     @python_2_unicode_compatible
     def __str__(self):
@@ -70,8 +78,14 @@ class nProjectHub(models.Model):
     or optional argument, the Hub can be the shot while the ProjectPart
     can be the sub-process assigned to it.
 
-    @param::part_type: The type of part this is (ehh..)
-    @type::part_type: nProjectPartType
+    :param::part_type: The type of part this is (ehh..)
+    :type::part_type: nProjectPartType
+
+    :param::name: Current name given to this piece
+    :type::name: CharField
+
+    :param::project: The nProject this is assigned to.
+    :type::project: ForeignKey -> nProject
     """
 
     ## Because these may link together we can pool the same ProjectPartTypes
@@ -90,12 +104,17 @@ class nProjectPart(models.Model):
     shots->film
     departments->vfx workflow
 
-    Whatever direction you take with this, consider the iplimentaion
+    Whatever direction you take with this, consider the implementation
     vs. output you'll get from organizing it into the overall data
     structure.
 
-    @param::part_type: The type of part this is (ehh..)
-    @type::part_type: nProjectPartType
+    :param::part_type: The type of part this is (ehh..)
+    :type::part_type: nProjectPartType
+
+    :param::name: The name identifier for the part
+    :type::name: CharField
+
+    :param::project: The project this part is assigned to.    
     """
     
     ## What kind of project part are we working on?
@@ -106,7 +125,7 @@ class nProjectPart(models.Model):
     ## When it comes down to it we'll need each component to have
     ## tracking markers. How we decide to handle that can vary on
     ## the project/pipeline. Hence why tracking is it's own app.
-    track_status = models.ForeignKey(nStatusComponent, null=True, on_delete=models.CASCADE)
+    # track_status = models.ForeignKey(nStatusComponent, null=True, on_delete=models.CASCADE)
 
     project = models.ForeignKey(nProject, null=True, on_delete=models.CASCADE)
 
