@@ -10,6 +10,9 @@ from noctis.fields import ListField
 ## Defaults:
 from nTracking.defaults.tracking_defaults import default_status_breakdown_config
 
+## History Tracking
+from simple_history.models import HistoricalRecords
+
 ## python:
 from datetime import datetime
 
@@ -17,7 +20,7 @@ from datetime import datetime
 Status Work. Areas dealing with overall progress of nProjectParts/Hubs
 '''
 
-def statusBreakdownTest(config):
+def status_breakdown_test(config):
     if isinstance(config, list):
         for aStatus in config:
             status_match = nStatusComponentLevel.objects.get(name=aStatus)
@@ -44,7 +47,7 @@ class nStatusType(models.Model):
     """
     name = models.CharField(max_length=150, unique=True)
     status_breakdown = ListField(default=default_status_breakdown_config,
-                                 validators=[statusBreakdownTest])
+                                 validators=[status_breakdown_test])
 
     @python_2_unicode_compatible
     def __str__(self):
@@ -62,21 +65,6 @@ class nStatusComponentLevel(models.Model):
     def __str__(self):
         return self.name
 
-class nStatusComponentHistory(models.Model):
-    """
-    Storing history information can be vital in term of keeping
-    long stream data organized. Making it accessible can be just
-    as vital.
-    """
-    status_id = models.IntegerField(default=0)
-    modified_on = models.DateTimeField(default=datetime.now, auto_now=False)
-    status_level = models.ForeignKey(nStatusComponentLevel, on_delete=models.CASCADE)
-
-    @python_2_unicode_compatible
-    def __str__(self):
-        return self.status_level.name
-
-
 class nStatusComponent(models.Model):
     """
     When the project comes into form. You'll want a simple method for
@@ -91,6 +79,9 @@ class nStatusComponent(models.Model):
     """
     status_type = models.ForeignKey(nStatusType, on_delete=models.CASCADE)
     status_level = models.ForeignKey(nStatusComponentLevel, on_delete=models.CASCADE)
+
+    ## Tracking history here will be important
+    history = HistoricalRecords()
 
     ## For fast return of the status level
     @python_2_unicode_compatible

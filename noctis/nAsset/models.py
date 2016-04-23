@@ -7,7 +7,7 @@ from nProject.models import nProjectPart
 from nProject.models import nProjectHub
 
 ## Utilitis
-from noctis.utils import organize_values
+from noctis.utils import clean_query
 
 ## History Tracking
 from simple_history.models import HistoricalRecords
@@ -134,7 +134,7 @@ class nAsset(models.Model):
         return self.name
 
     @python_2_unicode_compatible
-    def getGroupName(self):
+    def get_group_name(self):
         return version_controller.group_name
 
     @classmethod
@@ -150,17 +150,18 @@ class nAsset(models.Model):
 
         ## Organize our tables.
         vn = 'version_controller'
-        # asset_results = []
+        asset_results = []
         for an_asset in asset_values:
-            # asset_results.append(organize_values([vn], an_asset))
-            version_controller_table = {}
-            vc_id = an_asset[vn]
-            an_asset[vn] = dict(id=vc_id)
-            for a_vc_value in version_controller_list:
-                an_asset[vn][a_vc_value[len(vn)+2:]] = an_asset.pop(a_vc_value)
-            an_asset[vn]['asset_type'] = { 'name' : an_asset[vn].pop('asset_type__name') }
+            asset_results.append(clean_query(an_asset))
+            # # asset_results.append(organize_values([vn], an_asset))
+            # version_controller_table = {}
+            # vc_id = an_asset[vn]
+            # an_asset[vn] = dict(id=vc_id)
+            # for a_vc_value in version_controller_list:
+            #     an_asset[vn][a_vc_value[len(vn)+2:]] = an_asset.pop(a_vc_value)
+            # an_asset[vn]['asset_type'] = { 'name' : an_asset[vn].pop('asset_type__name') }
 
-        import pprint
-        pp = pprint.PrettyPrinter(indent=4)
-        pp.pprint(asset_values)
+        # import pprint
+        # pp = pprint.PrettyPrinter(indent=4)
+        # pp.pprint(asset_values)
         return asset_values
