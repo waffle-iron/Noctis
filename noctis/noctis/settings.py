@@ -31,6 +31,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'simple_history',
     'nTracking.apps.NtrackingConfig',
     'nProject.apps.NprojectConfig',
     'nPath.apps.NpathConfig',
@@ -42,7 +43,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'jsonrpc',
-    'simple-history'
 ]
 
 MIDDLEWARE_CLASSES = [

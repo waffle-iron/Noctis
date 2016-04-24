@@ -12,6 +12,9 @@ from noctis.utils import clean_query
 ## History Tracking
 from simple_history.models import HistoricalRecords
 
+## Python default
+import datetime
+
 class nAssetType(models.Model):
     """
     What are we actually using when it comes to the nAsset
@@ -123,7 +126,7 @@ class nAsset(models.Model):
     author = models.CharField(max_length=64, default="")
 
     ## Date Time Information to reference creation timing.
-    created = models.DateTimeField(default=datetime.now, auto_now=False)
+    created = models.DateTimeField(default=datetime.datetime.now(), auto_now=False)
 
     ## History Tracking -> For if we make changes to the object
     history = HistoricalRecords()
@@ -138,15 +141,20 @@ class nAsset(models.Model):
         return version_controller.group_name
 
     @classmethod
-    def make_dicts(cls, q):
-        ## To make a dictionary out of the objects at maximum performance
-        ## let's lean on the database rather than Python.
-        asset_fields = [field.name for field in cls._meta.fields]
+    def dict_fields(cls):
+        fields = [field.name for field in cls._meta.fields]
         version_controller_list =  [ "version_controller__group_name",
                                      "version_controller__asset_type__name",
                                      "version_controller__hub_pointer" ]
         asset_fields.extend(version_controller_list)
-        asset_values = list(q.values(*asset_fields))
+
+    @classmethod
+    def make_dicts(cls, q, fields=[]):
+        ## To make a dictionary out of the objects at maximum performance
+        ## let's lean on the database rather than Python.
+        if not field:
+            fields = cls.dict_fields()
+        asset_values = list(q.values(*fields))
 
         ## Organize our tables.
         vn = 'version_controller'

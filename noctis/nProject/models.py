@@ -2,7 +2,7 @@ from django.db import models
 from django.utils.encoding import python_2_unicode_compatible
 
 ## Other Apps
-# from nTracking.models import nStatusComponent
+from nStatus.models import nStatusComponent
 
 ## History Tracking
 from simple_history.models import HistoricalRecords
@@ -116,6 +116,7 @@ class nProjectPart(models.Model):
 
     :param::project: The project this part is assigned to.    
     """
+    ## Avoid cyclic dependency
     
     ## What kind of project part are we working on?
     part_type = models.ForeignKey(nProjectPartType, null=True, on_delete=models.CASCADE)
@@ -125,7 +126,7 @@ class nProjectPart(models.Model):
     ## When it comes down to it we'll need each component to have
     ## tracking markers. How we decide to handle that can vary on
     ## the project/pipeline. Hence why tracking is it's own app.
-    # track_status = models.ForeignKey(nStatusComponent, null=True, on_delete=models.CASCADE)
+    track_status = models.ForeignKey(nStatusComponent, null=True, on_delete=models.CASCADE)
 
     project = models.ForeignKey(nProject, null=True, on_delete=models.CASCADE)
 
