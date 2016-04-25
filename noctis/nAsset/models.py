@@ -73,8 +73,11 @@ class nVersionController(models.Model):
         return self.group_name
 
     def versionUp(self, number=1, static=False):
+
+        ## TODO: Better logic for this.
         if static:
-            self.highest_version = number
+            if self.highest_version < number:
+                self.highest_version = number
         else:
             self.highest_version += number
 
@@ -99,7 +102,7 @@ class nAsset(models.Model):
     
     ## This mainly points to a path. While it has the ability to act as more than
     ## that it will take a little massaging in other models/views.
-    asset_pointer = models.CharField(max_length=300, default="")
+    asset_pointer = models.CharField(max_length=300, default="", unique=True)
 
     ## For a good basic relationship between iterations we're going to let
     ## version control/asset 'typing' be dealt with inter-asset-wise
