@@ -129,7 +129,7 @@ class nProjectPart(models.Model):
     part_type = models.ForeignKey(nProjectPartType, null=True, on_delete=models.CASCADE)
 
     ## Even if using Hubs we may want to breakdown the allotment of a part
-    ## to a certain range inclusive.
+    ## to a certain range.
     part_length = models.FloatRangeField()
 
     name = models.CharField(max_length=150)
