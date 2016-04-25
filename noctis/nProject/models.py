@@ -148,7 +148,7 @@ class nProjectPart(models.Model):
                            "track_status__status_level__value"]
         project_field = ["project__short",
                          "project__project_type__name"]
-        
+
         fields.extend(part_type_fields)
         fields.extend(tracking_fields)
         fields.extend(project_field)
