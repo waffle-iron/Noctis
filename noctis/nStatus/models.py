@@ -1,3 +1,12 @@
+'''
+Status Work. Areas dealing with overall progress pertaining to an element.
+
+Differing from the tracking concept, this acts as in-model markers vs external
+pointers. As such these shouldn't contain ForeignKey's linking to out-of-app
+models. Instead models that are sought to contain a status should reference
+these models.
+'''
+
 from django.db import models
 from django.core.exceptions import ValidationError
 
@@ -10,11 +19,10 @@ from nTracking.defaults.tracking_defaults import default_status_breakdown_config
 ## Python
 from datetime import datetime
 
-'''
-Status Work. Areas dealing with overall progress of nProjectParts/Hubs.
-'''
-
 def status_breakdown_test(config):
+    '''
+    Currently not used. Component levels will be created if they don't exist.
+    '''
     if isinstance(config, list):
         for aStatus in config:
             status_match = nStatusComponentLevel.objects.filter(name=aStatus)
@@ -30,17 +38,16 @@ class nStatusType(models.Model):
     All statuses have to have a type. This is there identifier. The
     components themselves can become more modular in the long run.
     
-    @param::name: The name of the status type
-    @type::name: CharField
+    :param::name: The name of the status type
+    :type::name: CharField
 
-    @param::status_breakdown: The actual breakdown that a status
+    :param::status_breakdown: The actual breakdown that a status
     goes through as it passes markers.
-    @type::status_breakdown: ListField
-    @i.e.: ["name_of_SCL1", "name_of_SCL2", ...]
+    :type::status_breakdown: ListField
+    :i.e.: ["name_of_SCL1", "name_of_SCL2", ...]
     """
     name = models.CharField(max_length=150, unique=True)
-    status_breakdown = ListField(default=default_status_breakdown_config,
-                                 validators=[status_breakdown_test])
+    status_breakdown = ListField(default=default_status_breakdown_config)
 
     @python_2_unicode_compatible
     def __str__(self):
@@ -51,8 +58,11 @@ class nStatusComponentLevel(models.Model):
     The component status should have to have markers
     as it walks through the pipeline(s). This is that marker.
     """
-    name = models.CharField(max_length=150, unique=True)
+    name = models.CharField(max_length=150)
     value = models.IntegerField(default=0)
+
+    class Meta:
+        unique_together = ("name", "value")
 
     @python_2_unicode_compatible
     def __str__(self):
@@ -64,11 +74,11 @@ class nStatusComponent(models.Model):
     determining both the minutia status for individual components as
     well as broad themed access to information between pieces/projects.
 
-    @param::status_type: The type of the status to be used
-    @type::status_type: ForeignKey(nStatusType)
+    :param::status_type: The type of the status to be used
+    :type::status_type: ForeignKey(nStatusType)
 
-    @param::status_level: The completion amount given the set Status Type
-    @type::status_level: ForeignKey(nStatusComponentLevel)
+    :param::status_level: The completion amount given the set Status Type
+    :type::status_level: ForeignKey(nStatusComponentLevel)
     """
     status_type = models.ForeignKey(nStatusType, on_delete=models.CASCADE)
     status_level = models.ForeignKey(nStatusComponentLevel, on_delete=models.CASCADE)
@@ -83,3 +93,19 @@ class nStatusComponent(models.Model):
 
     def percentComplete(self):
         return (float(self.status_level.value)/float(self.status_type.total_status_components))*100.0
+
+    def level_up(self, value=1):
+        '''
+        Changing the current status_level. (This can be pos/neg)
+
+        :return the component level object
+        '''
+        sl_v = self.status_level.value
+        st_bd = self.status_type.breakdown
+
+        sl_v = sl_v += value
+        new_status_name = st_bd[sl_v]
+
+        new_status_level, created = nStatusComponentLevel.objects.get_or_create(name=new_status_name,
+                                                                                value=sl_v)
+        return new_status_level

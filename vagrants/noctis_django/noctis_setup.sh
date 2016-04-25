@@ -4,6 +4,8 @@
 # Basic Setup and package installation #
 ########################################
 
+# TODO: Setup env using pip requirements file.
+
 PROVISIONED_ON=/etc/vm_provision_on_timestamp
 if [ -f "$PROVISIONED_ON" ]
 then

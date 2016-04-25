@@ -1,3 +1,18 @@
+'''
+Approvals.
+Working with a pointer setup. Testing this will be important
+to keep everything in sync but will free up table-space and give central point
+of access to managed tracking data.
+
+Another import note is benefits to removing approval from direct contact with
+other models. An approval can simultaneously point to multiple parts and link
+elements that have no real connection. Keeping this on a clean, sustainable
+level of abstraction will help.
+
+NOTE:
+Tracking should not be imported by any other models. This is a top level concept.
+'''
+
 from django.db import models
 from django.utils.encoding import python_2_unicode_compatible
 
@@ -14,21 +29,6 @@ from noctis.utils import clean_query
 
 ## python:
 from datetime import datetime
-
-'''
-Approvals.
-Working with a pointer setup. Testing this will be important
-to keep everything in sync but will free up table-space and give central point
-of access to managed tracking data.
-
-Another import note is benefits to removing approval from direct contact with
-other models. An approval can simultaneously point to multiple parts and link
-elements that have no real connection. Keeping this on a clean, sustainable
-level of abstraction will help.
-
-NOTE:
-Tracking should not be imported by any other models. This is a top level concept.
-'''
 
 class nApprovalLevel(models.Model):
     """

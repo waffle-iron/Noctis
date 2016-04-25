@@ -131,6 +131,10 @@ class nAsset(models.Model):
     ## History Tracking -> For if we make changes to the object
     history = HistoricalRecords()
 
+    ## Marking for special use cases.
+    is_locked = models.BooleanField(default=False)
+    is_marked = models.BooleanField(default=False) # For even fast draw w/o approval pointers
+
     ### Methods ###
     @python_2_unicode_compatible
     def __str__(self):
@@ -147,20 +151,22 @@ class nAsset(models.Model):
                                      "version_controller__asset_type__name",
                                      "version_controller__hub_pointer" ]
         asset_fields.extend(version_controller_list)
+        return fields
 
     @classmethod
     def make_dicts(cls, q, fields=[]):
         ## To make a dictionary out of the objects at maximum performance
         ## let's lean on the database rather than Python.
-        if not field:
+        if not fields:
             fields = cls.dict_fields()
         asset_values = list(q.values(*fields))
 
         ## Organize our tables.
-        vn = 'version_controller'
         asset_results = []
         for an_asset in asset_values:
             asset_results.append(clean_query(an_asset))
+
+            ## TODO REMOVE AFTER TEST
             # # asset_results.append(organize_values([vn], an_asset))
             # version_controller_table = {}
             # vc_id = an_asset[vn]
@@ -169,7 +175,4 @@ class nAsset(models.Model):
             #     an_asset[vn][a_vc_value[len(vn)+2:]] = an_asset.pop(a_vc_value)
             # an_asset[vn]['asset_type'] = { 'name' : an_asset[vn].pop('asset_type__name') }
 
-        # import pprint
-        # pp = pprint.PrettyPrinter(indent=4)
-        # pp.pprint(asset_values)
-        return asset_values
+        return asset_results

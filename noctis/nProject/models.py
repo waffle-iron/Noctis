@@ -4,6 +4,9 @@ from django.utils.encoding import python_2_unicode_compatible
 ## Other Apps
 from nStatus.models import nStatusComponent
 
+## Utilitis
+from noctis.utils import clean_query
+
 ## History Tracking
 from simple_history.models import HistoricalRecords
 
@@ -133,3 +136,36 @@ class nProjectPart(models.Model):
     @python_2_unicode_compatible
     def __str__(self):
         return self.name
+
+    @classmethod
+    def dict_fields(cls):
+        fields = [field.name for field in cls._meta.fields]
+        part_type_fields = ["part_type__name"]
+        tracking_fields = ["track_status__status_type__name",
+                           "track_status__status_type__id",
+                           "track_status__status_type__status_breakdown",
+                           "track_status__status_level__name",
+                           "track_status__status_level__value"]
+        project_field = ["project__short",
+                         "project__project_type__name"]
+        
+        fields.extend(part_type_fields)
+        fields.extend(tracking_fields)
+        fields.extend(project_field)
+
+        return fields
+
+    @classmethod
+    def make_dicts(cls, q, fields=[]):
+        ## To make a dictionary out of the objects at maximum performance
+        ## let's lean on the database rather than Python.
+        if not fields:
+            fields = cls.dict_fields()
+        part_values = list(q.values(*fields))
+
+        ## Organie our tables.
+        part_results = []
+        for a_part in part_values:
+            part_results.append(clean_query(a_part))
+
+        return part_results
