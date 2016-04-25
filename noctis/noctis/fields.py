@@ -7,6 +7,13 @@ import ast
 import json
 from django.db import models
 
+## For reference. The JSON field retricts us to postgres but has
+## so much potential for dynamic, badass db calling.
+# from django.contrib.postgres.fields import JSONField
+
+## TODO: Is there a clean way to add a JSONfield for other
+## db types without getting into the habbit of adding app after app?
+
 class ListField(models.TextField):
     """
     Also yanked from the internet. Simple List -> Str -> List

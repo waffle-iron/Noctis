@@ -10,6 +10,9 @@ from noctis.utils import clean_query
 ## History Tracking
 from simple_history.models import HistoricalRecords
 
+##
+from django.contrib.postgres.fields.ranges import FloatRangeField
+
 class nProjectType(models.Model):
     """
     If your pipeline supports multiple different project types
@@ -96,6 +99,9 @@ class nProjectHub(models.Model):
     name = models.CharField(max_length=150)
     project = models.ForeignKey(nProject, null=True, on_delete=models.CASCADE)
 
+    ## Length of the segment we're working on.
+    hub_length = models.FloatRangeField()
+
     @python_2_unicode_compatible
     def __str__(self):
         return self.name
@@ -119,10 +125,12 @@ class nProjectPart(models.Model):
 
     :param::project: The project this part is assigned to.    
     """
-    ## Avoid cyclic dependency
-    
     ## What kind of project part are we working on?
     part_type = models.ForeignKey(nProjectPartType, null=True, on_delete=models.CASCADE)
+
+    ## Even if using Hubs we may want to breakdown the allotment of a part
+    ## to a certain range inclusive.
+    part_length = models.FloatRangeField()
 
     name = models.CharField(max_length=150)
 
