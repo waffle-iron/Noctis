@@ -142,3 +142,52 @@ def version_up_asset(request, asset_id=0, asset_pointer=""):
 
     return True
     ## TODO: Check and finish
+
+@jsonrpc_method("nAsset.add_asset_to_vrsion_controller(int, str) -> dict",
+                authenticated=True)
+def add_asset_to_vrsion_controller(request, version_controller_id=0, asset_pointer=""):
+    '''
+    Add asset (already made) to version_controller if not
+    connected. This shouldn't be used all that often as version management
+    should be done on the database more than not.
+
+    @params
+    $version_controller_id : (int) : The id of our VC
+
+    $asset_pointer : (str) : The asset_pointer for our to-add nAsset
+
+    $return : (dict) : The version controller we're now using.
+    '''
+    asset_to_handle = nAsset.objects.filter(asset_pointer=asset_pointer)
+
+    if asset_to_handle.exists():
+        asset_to_handle = asset_to_handle[0]
+    else:
+        raise RuntimeError("No asset exists with that pointer or path.")
+
+    using_vc = nVersionController.objects.filter(id=version_controller_id)
+    if using_vc.exits():
+        using_vc = using_vc[0]
+    else:
+        raise RuntimeError("No Version Controller of that id can be found.")
+
+    if not asset_to_handle.version_controller.asset_type == using_vc.asset_type:
+        e = "Can't add asset of type: %s to VC of type %s. They must be the same."
+        raise TypeError(e%(str(asset_to_handle.version_controller.asset_type,
+                           str(using_vc.asset_type))))
+
+    if asset_to_handle.version > using_vc.highest_version:
+        using_vc.highest_version = asset_to_handle.version
+
+    ## deal with the version controller. If it is the only asset in that group
+    ## we can remove it.
+    assets_in_old_vc = nAsset.objects.filter(verison_controller=asset_to_handle.version_controller)
+    
+    old_vc = asset_to_handle.verison_controller
+    asset_to_handle.verison_controller = using_vc
+    asset_to_handle.save()
+
+    if not len(assets_in_old_vc) > 1:
+        old_vc.delete()
+
+    return nVersionController.make_dicts(nVersionController.objects.filter(using_vc))[0]

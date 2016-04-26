@@ -81,6 +81,26 @@ class nVersionController(models.Model):
         else:
             self.highest_version += number
 
+    @classmethod
+    def dict_fields(cls):
+        fields = [field.name for field in cls._meta.fields]
+        version_controller_list =  [ "asset_type__name",
+                                     "hub_pointer__part_type__name" ]
+        fields.extend(version_controller_list)
+        return fields
+
+    @classmethod
+    def make_dicts(cls, q, fields=[]):
+        if not fields:
+            fields = cls.dict_fields()
+        vc_vales = list(q.values(*fields))
+
+        vc_results = []
+        for a_vc in vc_vales:
+            vc_results.appens(clean_query(a_vc))
+
+        return vc_results
+
 class nAsset(models.Model):
     """
     The main model for any form of singular object component management
@@ -153,7 +173,7 @@ class nAsset(models.Model):
         version_controller_list =  [ "version_controller__group_name",
                                      "version_controller__asset_type__name",
                                      "version_controller__hub_pointer" ]
-        asset_fields.extend(version_controller_list)
+        fields.extend(version_controller_list)
         return fields
 
     @classmethod
