@@ -6,9 +6,21 @@ from nPath.models import nPath
 from nProject.models import nProjectPart
 from nProject.models import nProjectHub
 
+## Utilitis
+from noctis.utils import clean_query
+
+## History Tracking
+from simple_history.models import HistoricalRecords
+
+## Python default
+import datetime
+
 class nAssetType(models.Model):
     """
     What are we actually using when it comes to the nAsset
+
+    :param::name: Name of the asset type.
+    :type::name: CharField
     """
     
     name = models.CharField(max_length=150, default="")
@@ -23,9 +35,19 @@ class nVersionController(models.Model):
     space we need a method of organizing them and placing them into
     sequential buckets. This allows us to do just that.
 
-    @param::highest_version: The current highest version available
+    :param::highest_version: The current highest version available
     for that group of assets.
-    @type::highest_version: Int 
+    :type::highest_version: IntegerField
+
+    :param::group_name: The version group name our assets use to for human readable
+    understanding and collecting
+    :type::group_name: CharField
+
+    :param::hub_pointer: The hub this group is attached to.
+    :type::hub_pointer: ForeignKey -> nProjectHub
+
+    :param::asset_type: The type of asset we're dealing with.
+    :type::asset_type: ForeignKey -> nAssetType
     """
 
     highest_version = models.IntegerField(default=1)
@@ -51,10 +73,33 @@ class nVersionController(models.Model):
         return self.group_name
 
     def versionUp(self, number=1, static=False):
+
+        ## TODO: Better logic for this.
         if static:
-            self.highest_version = number
+            if self.highest_version < number:
+                self.highest_version = number
         else:
             self.highest_version += number
+
+    @classmethod
+    def dict_fields(cls):
+        fields = [field.name for field in cls._meta.fields]
+        version_controller_list =  [ "asset_type__name",
+                                     "hub_pointer__part_type__name" ]
+        fields.extend(version_controller_list)
+        return fields
+
+    @classmethod
+    def make_dicts(cls, q, fields=[]):
+        if not fields:
+            fields = cls.dict_fields()
+        vc_vales = list(q.values(*fields))
+
+        vc_results = []
+        for a_vc in vc_vales:
+            vc_results.appens(clean_query(a_vc))
+
+        return vc_results
 
 class nAsset(models.Model):
     """
@@ -77,7 +122,7 @@ class nAsset(models.Model):
     
     ## This mainly points to a path. While it has the ability to act as more than
     ## that it will take a little massaging in other models/views.
-    asset_pointer = models.CharField(max_length=300, default="")
+    asset_pointer = models.CharField(max_length=300, default="", unique=True)
 
     ## For a good basic relationship between iterations we're going to let
     ## version control/asset 'typing' be dealt with inter-asset-wise
@@ -103,36 +148,54 @@ class nAsset(models.Model):
     ## Information handles.
     author = models.CharField(max_length=64, default="")
 
+    ## Date Time Information to reference creation timing.
+    created = models.DateTimeField(default=datetime.datetime.now(), auto_now=False)
+
+    ## History Tracking -> For if we make changes to the object
+    history = HistoricalRecords()
+
+    ## Marking for special use cases.
+    is_locked = models.BooleanField(default=False)
+    is_marked = models.BooleanField(default=False) # For even fast draw w/o approval pointers
+
     ### Methods ###
     @python_2_unicode_compatible
     def __str__(self):
         return self.name
 
     @python_2_unicode_compatible
-    def getGroupName(self):
+    def get_group_name(self):
         return version_controller.group_name
 
     @classmethod
-    def make_dicts(cls, q):
-        ## To make a dictionary out of the objects at maximum performance
-        ## let's lean on the database rather than Python.
-        asset_fields = [field.name for field in cls._meta.fields]
+    def dict_fields(cls):
+        fields = [field.name for field in cls._meta.fields]
         version_controller_list =  [ "version_controller__group_name",
                                      "version_controller__asset_type__name",
                                      "version_controller__hub_pointer" ]
-        asset_fields.extend(version_controller_list)
-        asset_values = list(q.values(*asset_fields))
+        fields.extend(version_controller_list)
+        return fields
+
+    @classmethod
+    def make_dicts(cls, q, fields=[]):
+        ## To make a dictionary out of the objects at maximum performance
+        ## let's lean on the database rather than Python.
+        if not fields:
+            fields = cls.dict_fields()
+        asset_values = list(q.values(*fields))
 
         ## Organize our tables.
+        asset_results = []
         for an_asset in asset_values:
-            vn = 'version_controller'
-            version_controller_table = {}
-            vc_id = an_asset[vn]
-            an_asset[vn] = dict(id=vc_id)
-            for a_vc_value in version_controller_list:
-                an_asset[vn][a_vc_value[len(vn)+2:]] = an_asset.pop(a_vc_value)
+            asset_results.append(clean_query(an_asset))
 
-        import pprint
-        pp = pprint.PrettyPrinter(indent=4)
-        pp.pprint(asset_values)
-        return asset_values
+            ## TODO REMOVE AFTER TEST
+            # # asset_results.append(organize_values([vn], an_asset))
+            # version_controller_table = {}
+            # vc_id = an_asset[vn]
+            # an_asset[vn] = dict(id=vc_id)
+            # for a_vc_value in version_controller_list:
+            #     an_asset[vn][a_vc_value[len(vn)+2:]] = an_asset.pop(a_vc_value)
+            # an_asset[vn]['asset_type'] = { 'name' : an_asset[vn].pop('asset_type__name') }
+
+        return asset_results

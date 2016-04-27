@@ -2,7 +2,16 @@ from django.db import models
 from django.utils.encoding import python_2_unicode_compatible
 
 ## Other Apps
-from nTracking.models import nStatusComponent
+from nStatus.models import nStatusComponent
+
+## Utilitis
+from noctis.utils import clean_query
+
+## History Tracking
+from simple_history.models import HistoricalRecords
+
+##
+from django.contrib.postgres.fields.ranges import FloatRangeField
 
 class nProjectType(models.Model):
     """
@@ -11,8 +20,8 @@ class nProjectType(models.Model):
     it falls under to help organize elements/give permissions
     more easily.
 
-    @param::name: The name of the project type
-    @type::name: CharField
+    :param::name: The name of the project type
+    :type::name: CharField
     """
 
     name = models.CharField(max_length=150)
@@ -26,8 +35,8 @@ class nProjectPartType(models.Model):
     Even the parts have a type no? Managing this should be simple
     enough.
 
-    @param::name: The name of the project part type
-    @type::name: CharField
+    :param::name: The name of the project part type
+    :type::name: CharField
     """
 
     name = models.CharField(max_length=150)
@@ -39,7 +48,7 @@ class nProjectPartType(models.Model):
 class nProject(models.Model):
     """
     The base object for a project. (Obviously)
-    This is more of a concept than a concreet usable item for now.
+    This is more of a concept than a concrete usable item for now.
     With the idea of this repo being open there can be any number
     of way to apply this object.
 
@@ -47,17 +56,22 @@ class nProject(models.Model):
     refine the use and specificity. Nothing should become too strict.
     Modularity is always key.
 
-    @param::name: The name of the project
-    @type::name: CharField
+    :param::name: The name of the project
+    :type::name: CharField
 
-    @param::short: The short name of the project. Cleanliness
-    @type::short: CharField
+    :param::short: The short name of the project. Cleanliness
+    :type::short: CharField
+
+    :param::project_type: What type of project are we working with
+    :type::project_type: ForeignKey -> nProjectType
     """
 
     name = models.CharField(max_length=150)
     short = models.CharField(max_length=10, default="")
 
     project_type = models.ForeignKey(nProjectType, null=True, on_delete=models.CASCADE)
+
+    history = HistoricalRecords()
 
     @python_2_unicode_compatible
     def __str__(self):
@@ -70,14 +84,23 @@ class nProjectHub(models.Model):
     or optional argument, the Hub can be the shot while the ProjectPart
     can be the sub-process assigned to it.
 
-    @param::part_type: The type of part this is (ehh..)
-    @type::part_type: nProjectPartType
+    :param::part_type: The type of part this is (ehh..)
+    :type::part_type: nProjectPartType
+
+    :param::name: Current name given to this piece
+    :type::name: CharField
+
+    :param::project: The nProject this is assigned to.
+    :type::project: ForeignKey -> nProject
     """
 
     ## Because these may link together we can pool the same ProjectPartTypes
     part_type = models.ForeignKey(nProjectPartType, null=True, on_delete=models.CASCADE)
     name = models.CharField(max_length=150)
     project = models.ForeignKey(nProject, null=True, on_delete=models.CASCADE)
+
+    ## Length of the segment we're working on.
+    hub_length = models.FloatRangeField()
 
     @python_2_unicode_compatible
     def __str__(self):
@@ -90,16 +113,24 @@ class nProjectPart(models.Model):
     shots->film
     departments->vfx workflow
 
-    Whatever direction you take with this, consider the iplimentaion
+    Whatever direction you take with this, consider the implementation
     vs. output you'll get from organizing it into the overall data
     structure.
 
-    @param::part_type: The type of part this is (ehh..)
-    @type::part_type: nProjectPartType
+    :param::part_type: The type of part this is (ehh..)
+    :type::part_type: nProjectPartType
+
+    :param::name: The name identifier for the part
+    :type::name: CharField
+
+    :param::project: The project this part is assigned to.    
     """
-    
     ## What kind of project part are we working on?
     part_type = models.ForeignKey(nProjectPartType, null=True, on_delete=models.CASCADE)
+
+    ## Even if using Hubs we may want to breakdown the allotment of a part
+    ## to a certain range.
+    part_length = models.FloatRangeField()
 
     name = models.CharField(max_length=150)
 
@@ -113,3 +144,36 @@ class nProjectPart(models.Model):
     @python_2_unicode_compatible
     def __str__(self):
         return self.name
+
+    @classmethod
+    def dict_fields(cls):
+        fields = [field.name for field in cls._meta.fields]
+        part_type_fields = ["part_type__name"]
+        tracking_fields = ["track_status__status_type__name",
+                           "track_status__status_type__id",
+                           "track_status__status_type__status_breakdown",
+                           "track_status__status_level__name",
+                           "track_status__status_level__value"]
+        project_field = ["project__short",
+                         "project__project_type__name"]
+
+        fields.extend(part_type_fields)
+        fields.extend(tracking_fields)
+        fields.extend(project_field)
+
+        return fields
+
+    @classmethod
+    def make_dicts(cls, q, fields=[]):
+        ## To make a dictionary out of the objects at maximum performance
+        ## let's lean on the database rather than Python.
+        if not fields:
+            fields = cls.dict_fields()
+        part_values = list(q.values(*fields))
+
+        ## Organie our tables.
+        part_results = []
+        for a_part in part_values:
+            part_results.append(clean_query(a_part))
+
+        return part_results

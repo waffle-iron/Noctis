@@ -1,13 +1,15 @@
 from django.test import TestCase
 
+## Other test models needed
+from nAsset.models import nAssetType
+from nAsset.models import nAsset
+from nAsset.models import nVersionController
+
+## This test suite models
 from nProject.models import nProject
 from nProject.models import nProjectType
 from nProject.models import nProjectPartType
 from nProject.models import nProjectHub
-
-from nAsset.models import nAssetType
-from nAsset.models import nAsset
-from nAsset.models import nVersionController
 
 class AssetTestCase(TestCase):
 

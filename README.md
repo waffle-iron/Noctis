@@ -12,6 +12,8 @@ To connect the most intense elements of a production pipeline together and help 
 - Application Distribution
 - Package Control
 
+One thing to truly strive for in this project is universal access from any of the major operating distributions. Currently Noctis is developed on a co-Linux-Windows environment with light testing being done a OSX. If others would like to test the limitations of any of these systems that would be much obliged.
+ 
 #### Tracking and the Ticket System
 This is in part handled by the Noctis engine (Django) as well as a slight I/O component. We need to keep all of our data in oder. Unlike most environments however we want the ability to keep our assets moving to any place in particular without giving up even a hint of security.
 

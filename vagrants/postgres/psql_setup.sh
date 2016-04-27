@@ -46,7 +46,7 @@ sudo -i -u postgres
 createdb noctisdb
 
 createuser -P noctis
-psql -d noctisdb -c GRANT ALL PRIVILEGES ON DATABASE noctisdb TO noctis;
+psql -d noctisdb -c "GRANT ALL PRIVILEGES ON DATABASE noctisdb TO noctis;"
 
 ## And Finally finish up!
 date > "$PROVISIONED_ON"
