@@ -1,11 +1,11 @@
-'''
-Status Work. Areas dealing with overall progress pertaining to an element.
-
-Differing from the tracking concept, this acts as in-model markers vs external
-pointers. As such these shouldn't contain ForeignKey's linking to out-of-app
-models. Instead models that are sought to contain a status should reference
-these models.
-'''
+###############################################################################
+# Status Work. Areas dealing with overall progress pertaining to an element.
+#
+# Differing from the tracking concept, this acts as in-model markers vs external
+# pointers. As such these shouldn't contain ForeignKey's linking to out-of-app
+# models. Instead models that are sought to contain a status should reference
+# these models.
+###############################################################################
 
 from django.db import models
 from django.core.exceptions import ValidationError

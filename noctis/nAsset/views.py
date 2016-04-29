@@ -28,7 +28,7 @@ def create_asset(request, asset_pointer="", asset_type="", version=0,
     on too much.
 
     @params
-    $asset_pointer : (str) : give us the path we;re working with.
+    $asset_pointer : (str) : give us the path we're working with.
 
     $asset_type : (str) : What kind of asset is this?
 

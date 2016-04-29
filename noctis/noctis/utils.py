@@ -84,7 +84,12 @@ def clean_query(values, SPLIT="__"):
             else:
                 ## Shouldn't happen. Avoid breakdown.
                 _tmp = { "some_val" : a_value }
-            out_[a_key].update(_tmp)
+
+            ## In case the key hasn't been worked with yet
+            if not out_.get(a_key):
+                out_[a_key] = _tmp
+            else:
+                out_[a_key].update(_tmp)
         elif len(slicedict(values, a_key)) > 1:
             ## If there are multiple values we should still try to create
             ## that key entry. Don't combine with previous elif for performance

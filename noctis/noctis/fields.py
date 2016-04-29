@@ -5,20 +5,44 @@ Simple additional models taken from across the web.
 
 import ast
 import json
+import settings
 from django.db import models
 
-## For reference. The JSON field retricts us to postgres but has
-## so much potential for dynamic, badass db calling.
+## For reference. The JSON field restricts us to postgres but has
+## so much potential for dynamic, bad-ass db calling.
 # from django.contrib.postgres.fields import JSONField
 
 ## TODO: Is there a clean way to add a JSONfield for other
-## db types without getting into the habbit of adding app after app?
+## db types without getting into the habit of adding app after app?
+
+class PathField(models.TextField):
+    '''
+    A custom field to handle the pathing structures presented in Noctis
+    and the surrounding ecosystem. This will hopefully one day lean on
+    Machine Learning to populate and comprehend pathing structures.
+    '''
+
+    __metaclass__ = models.SubfieldBase
+
+    def __init(self, *args, **kwargs):
+        super(PathField, self).__init__(*args, **kwargs)
+
+    def to_python(self, value):
+        if not value:
+            value = {}
+
+        if isinstance(value, dict):
+            return value
+
+        _field_return = {}
+        for a_field in value.split(settings.PATH_SPLIT):
+            pass ## TODO
 
 class ListField(models.TextField):
-    """
-    Also yanked from the internet. Simple List -> Str -> List
+    '''
+    Yanked from the Internet. Simple List -> Str -> List
     for storing data.
-    """
+    '''
 
     __metaclass__ = models.SubfieldBase
 
