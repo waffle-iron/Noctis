@@ -1,3 +1,4 @@
+[![Stories in Ready](https://badge.waffle.io/PrettyTrue/noctis.png?label=ready&title=Ready)](https://waffle.io/PrettyTrue/noctis)
 # Noctis
 Open source production pipeline.
 
